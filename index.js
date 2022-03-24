@@ -6,7 +6,6 @@ const archiver = require('archiver');
 const fse = require('fs-extra');
 
 
-
 const kanji = new Map();
 const keyCache = new Set();
 const output = [];
@@ -63,8 +62,7 @@ async function loadJson(pathName) {
   const rawData = JSON.parse(fs.readFileSync(pathName, 'utf-8'));
   for (let d of rawData) {
     const [key, hiragana, _2, _3, _4, _5, _6] = d;
-    if (keyCache.has(key)) continue;
-    keyCache.add(key);
+    if (keyCache.has(`${key}_${hiragana}`)) continue;
     const hanviet = [];
     for (let c of key) {
       if (kanji.has(c)) {
@@ -72,6 +70,7 @@ async function loadJson(pathName) {
       }
     }
     if (!hanviet[0]) continue;
+    keyCache.add(`${key}_${hiragana}`);
     output.push([key, hiragana, '', '', _4, [hanviet.join('|')], _6, '']);
   }
 }
@@ -88,11 +87,11 @@ async function main() {
     }
   }
   const indexPath = './output/hanviet/index.json';
-  const dictPath = './output/hanviet/term_bank_1.json';
+  const termPath = './output/hanviet/term_bank_1.json';
   const dictZip = fs.createWriteStream('./output/dict.zip');
   const indexData = {'title': 'Hanviet', 'format': 3, 'revision': 'hanviet1', 'sequenced': true};
   fse.outputFileSync(indexPath, JSON.stringify(indexData));
-  fse.outputFileSync(dictPath, JSON.stringify(output));
+  fse.outputFileSync(termPath, JSON.stringify(output));
   const archive = archiver('zip', {
     gzip: true,
     zlib: {level: 9}
@@ -101,8 +100,8 @@ async function main() {
     throw err;
   });
   archive.pipe(dictZip);
-  archive.file(indexPath, {name: 'term_bank_1.json'});
-  archive.file(dictPath, {name: 'index.json'});
+  archive.file(termPath, {name: 'term_bank_1.json'});
+  archive.file(indexPath, {name: 'index.json'});
   await archive.finalize();
 }
 
