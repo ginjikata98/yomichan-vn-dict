@@ -11,11 +11,11 @@ const keyCache = new Set();
 const output = [];
 
 async function loadDb() {
-  const data = await db.all('SELECT field1, field3 FROM kanji');
+  const data = await db.all('SELECT key, hanviet FROM kanji');
   for (let row of data) {
-    const {field1, field3} = row;
+    const {key, hanviet} = row;
     const cache = new Set();
-    let meaning = field3
+    let meaning = hanviet
       .split('#')
       .map(i => {
         return i
@@ -34,9 +34,8 @@ async function loadDb() {
       })
       .join(',')
     ;
-    kanji.set(field1, meaning);
+    kanji.set(key, meaning);
   }
-
 
   const rootPath = path.resolve(__dirname, './yomichanJsonInput/kanjidic_vietnamese');
   for await (const [root, dirs, files] of walk(rootPath)) {
