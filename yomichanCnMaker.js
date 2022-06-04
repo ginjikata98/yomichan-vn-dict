@@ -7,12 +7,12 @@ async function test() {
   const data = []
   $('.p1').each((_, el) => {
     const row = $(el).text().split('\t')
-    data.push([row[1], row[4], row[5]])
+    data.push([row[1], row[4] || '', row[5] || ''])
   })
   let text = ''
   for (let d of data) {
     const spell = await loadSpell(d[0])
-    const r = d.join(';') + ';' +  spell.join(',')
+    const r = d.join(';') + ';' + spell.join(',')
     console.log(r)
     text += r + '\n'
   }
